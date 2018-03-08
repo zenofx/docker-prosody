@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  prosody:
+    container_name: trunk
+    build: .
+    restart: unless-stopped
+    network_mode: "host"
+    extra_hosts:
+      - "electra:172.17.0.1"
+      - "db:172.17.0.1"
+    environment:
+      - TZ=Europe/Berlin
+      - USER=prosody
+      - UID=977
+      - GID=977
+    volumes:
+      # bind mounts
+      - /etc/localtime:/etc/localtime:ro
+      - /home/prosody/config:/etc/prosody
+      - /home/prosody/upload:/var/lib/prosody/http_upload
+      - /home/prosody/data:/var/lib/prosody
+      # docker volumes
+      - logs:/var/log/prosody
+      - src:/usr/src/prosody
+      - modules:/usr/lib/prosody/modules
+
+volumes:
+  logs:
+  src:
+  modules:
+
