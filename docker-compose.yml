@@ -1,11 +1,27 @@
-version: '3'
+version: '2.3'
 
 services:
   prosody:
     container_name: trunk
     build: .
     restart: unless-stopped
-    network_mode: "host"
+    networks:
+      net:
+        ipv6_address: 2a01:4f8:1c17:42a2:3::beef
+    ports:
+      # proxy
+      - 5000:5000/tcp
+      # c2s
+      - 5222:5222/tcp
+      # s2s
+      - 5269:5269/tcp
+      # bosch
+      - 5280:5280/tcp
+      # bosch TLS
+      - 5281:5281/tcp
+    expose:
+      # component
+      - 5347/tcp
     extra_hosts:
       - "electra:172.17.0.1"
       - "db:172.17.0.1"
@@ -24,6 +40,16 @@ services:
       - logs:/var/log/prosody
       - src:/usr/src/prosody
       - modules:/usr/lib/prosody/modules
+
+networks:
+  net:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 2a01:4f8:1c17:42a2:3::/80
+          gateway: 2a01:4f8:1c17:42a2:3::1
 
 volumes:
   logs:

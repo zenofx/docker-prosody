@@ -53,6 +53,4 @@ USER root
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "prosodyctl", "start" ]
 
-#EXPOSE 80 443 5222 5269 5347 5280 5281
-
-
+EXPOSE 5222 5269 5347 5280 5281
