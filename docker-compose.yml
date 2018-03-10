@@ -2,7 +2,7 @@ version: '2.3'
 
 services:
   prosody:
-    container_name: trunk
+    container_name: prosody_trunk
     build: .
     restart: unless-stopped
     networks:
@@ -24,6 +24,18 @@ services:
       - 5281/tcp
     extra_hosts:
       - "db:172.17.0.1"
+    dns:
+      # the host's resolv.conf is linked to
+      # /run/systemd/resolve/stub-resolv.conf
+      # which only containts a loopback address
+      # which again is filtered by docker because
+      # it's unreachable from insode the container
+      - 213.133.98.98
+      - 2a01:4f8:0:a0a1::add:1010
+      - 213.133.99.99
+      - 2a01:4f8:0:a102::add:9999
+      - 213.133.100.100
+      - 2a01:4f8:0:a111::add:9898
     environment:
       - TZ=Europe/Berlin
       - USER=prosody
