@@ -7,23 +7,22 @@ services:
     restart: unless-stopped
     networks:
       net:
-        ipv6_address: 2a01:4f8:1c17:42a2:3::beef
+        ipv6_address: 2a01:4f8:1c17:42a2:dead:c01d:1d13:f001
     ports:
-      # proxy
+      # socks5 bytestream proxy
       - 5000:5000/tcp
       # c2s
       - 5222:5222/tcp
       # s2s
       - 5269:5269/tcp
-      # bosch
-      - 5280:5280/tcp
-      # bosch TLS
-      - 5281:5281/tcp
+      # bosch (reverse proxied)
+      - 127.0.0.1:5280:5280/tcp
     expose:
       # component
       - 5347/tcp
+      # bosch TLS (not forwarded)
+      - 5281/tcp
     extra_hosts:
-      - "electra:172.17.0.1"
       - "db:172.17.0.1"
     environment:
       - TZ=Europe/Berlin
@@ -31,11 +30,14 @@ services:
       - UID=977
       - GID=977
     volumes:
-      # bind mounts
+      # bind mounts ro
       - /etc/localtime:/etc/localtime:ro
+      - /run/postgresql:/run/postgresql:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # bind mounts rw
       - /home/prosody/config:/etc/prosody
-      - /home/prosody/upload:/var/lib/prosody/http_upload
       - /home/prosody/data:/var/lib/prosody
+      - /home/prosody/upload:/var/lib/prosody/upload
       # docker volumes
       - logs:/var/log/prosody
       - src:/usr/src/prosody
@@ -48,8 +50,8 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 2a01:4f8:1c17:42a2:3::/80
-          gateway: 2a01:4f8:1c17:42a2:3::1
+        - subnet: 2a01:4f8:1c17:42a2:dead::/80
+          gateway: 2a01:4f8:1c17:42a2:dead::1
 
 volumes:
   logs:
