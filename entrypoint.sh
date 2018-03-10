@@ -17,6 +17,10 @@ cd /usr/src/prosody && su-exec $UID:$GID ./configure --prefix=/ \
 	&& su-exec $UID:$GID make \
 	&& make install \
 	&& make clean \
-	chown -vR $UID:$GID /etc/prosody/*
+	&& chown -vR $UID:$GID /etc/prosody/* \
+	&& chown -v root /etc/prosody/certs
+	# prosodyctl cert import complains if not owned by executing user (root)
+	# which it needs in order to read a mounted certificate volume
+	# e.g. /etc/letsencrypt/
 
 su-exec $UID:$GID "$@"
