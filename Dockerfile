@@ -32,6 +32,7 @@ RUN \
         ssl-cert \
         tzdata \
         mercurial \
+        telnet \
     && apt-get build-dep -y prosody \
     && apt-get clean
 
