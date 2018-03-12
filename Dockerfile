@@ -1,13 +1,21 @@
 FROM debian:sid-slim
-MAINTAINER Thorsten Schubert <tschubert@bafh.org>
+LABEL maintainer="Thorsten Schubert <tschubert@bafh.org>"
 
 ARG DEBIAN_FRONTEND="noninteractive"
+ARG UNAME="prosody"
+ARG TZ="Europe/Berlin"
+ARG UID="977"
+ARG GID="977"
+ARG LUAJIT="false"
 
-ENV UNAME=prosody \
-	UID=977 \
-	GID=977 \
-	TZ=Europe/Berlin \
-	__FLUSH_LOG=yes
+ENV UNAME=${UNAME} \
+	TZ=${TZ} \
+	UID=${UID} \
+	GID=${GID} \
+	LUAJIT=${LUAJIT} \
+	__FLUSH_LOG="yes"
+
+ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 
 RUN \
 	printf 'deb-src http://deb.debian.org/debian sid main' >> "/etc/apt/sources.list" \
@@ -27,28 +35,32 @@ RUN \
         lua-socket \
         lua-zlib \
         lua5.1 \
+        luajit \
         openssl \
         ca-certificates \
         ssl-cert \
         tzdata \
         mercurial \
-        telnet \
+        busybox \
     && apt-get build-dep -y prosody \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /usr/share/man/* /tmp/* /var/tmp/*
 
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./su-exec-0.2/su-exec /usr/local/bin/
 
 RUN \
-	useradd -m -d /var/lib/prosody -r -U -u ${UID} -s /bin/false ${UNAME} \
-	&& mkdir -p /run/prosody /etc/prosody /var/lib/prosody /var/log/prosody /usr/lib/prosody/modules /usr/src/prosody \
+	echo ${TZ} > /etc/timezone \
+	&& dpkg-reconfigure -f noninteractive tzdata 2>&1 \
+	&& mkdir -p /run/prosody /etc/prosody /var/lib/prosody /var/log/prosody /usr/lib/prosody/modules-extra /usr/src/prosody \
+	&& groupadd -r -g ${GID} ${UNAME} \
+	&& useradd -M -d /var/lib/prosody -r -u ${UID} -g ${GID} -s /bin/false ${UNAME} \
 	&& chown -vR ${UID}:${GID} /run/prosody /etc/prosody /var/lib/prosody /var/log/prosody /usr/lib/prosody /usr/src/prosody \
-    && chmod a+x /entrypoint.sh /usr/local/bin/su-exec \
-    && rm -rf /var/lib/apt/lists/* /usr/share/man/* /tmp/*
+    && chmod a+x /entrypoint.sh /usr/local/bin/su-exec
 
 # permissions should be retained
 USER ${UNAME}
-VOLUME [ "/etc/prosody", "/var/lib/prosody", "/usr/lib/prosody/modules", "/usr/src/prosody" ]
+VOLUME [ "/etc/prosody", "/var/lib/prosody", "/usr/lib/prosody/modules-extra", "/usr/src/prosody" ]
 USER root
 
 ENTRYPOINT [ "/entrypoint.sh" ]

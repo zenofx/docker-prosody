@@ -2,8 +2,10 @@ version: '2.3'
 
 services:
   prosody:
-    container_name: prosody_trunk
-    build: .
+    container_name: prosody
+    build:
+      context: .
+    image: zeno/prosody:latest
     restart: unless-stopped
     networks:
       net:
@@ -41,19 +43,19 @@ services:
       - USER=prosody
       - UID=977
       - GID=977
+      - LUAJIT=true
     volumes:
       # bind mounts ro
-      - /etc/localtime:/etc/localtime:ro
       - /run/postgresql:/run/postgresql:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       # bind mounts rw
       - /home/prosody/config:/etc/prosody
       - /home/prosody/data:/var/lib/prosody
-      - /home/prosody/upload:/var/lib/prosody/upload
+      - /home/prosody/upload:/srv/http/prosody_upload
       # docker volumes
       - logs:/var/log/prosody
       - src:/usr/src/prosody
-      - modules:/usr/lib/prosody/modules
+      - modules:/usr/lib/prosody/modules-extra
 
 networks:
   net:
