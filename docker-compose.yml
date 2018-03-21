@@ -7,14 +7,17 @@ services:
       context: .
     image: zeno/prosody:latest
     restart: unless-stopped
+    stop_grace_period: 15s
     networks:
       net:
         ipv6_address: 2a01:4f8:1c17:42a2:dead:c01d:1d13:f001
     ports:
       # socks5 bytestream proxy
       - 5000:5000/tcp
-      # c2s
+      # c2s - STARTTLS
       - 5222:5222/tcp
+      # c2s - Direct TLS
+      - 5223:5223/tcp
       # s2s
       - 5269:5269/tcp
       # bosch (reverse proxied)
@@ -27,11 +30,10 @@ services:
     extra_hosts:
       - "db:172.17.0.1"
     dns:
-      # the host's resolv.conf is linked to
-      # /run/systemd/resolve/stub-resolv.conf
-      # which only containts a loopback address
-      # which again is filtered by docker because
-      # it's unreachable from insode the container
+      # the host's resolv.conf is linked to /run/systemd/resolve/stub-resolv.conf
+      # which only containts a loopback address, which again is filtered by docker
+      # because it is unreachable from inside the container
+      # so we configure dns manually:
       - 213.133.98.98
       - 2a01:4f8:0:a0a1::add:1010
       - 213.133.99.99
@@ -43,16 +45,24 @@ services:
       - USER=prosody
       - UID=977
       - GID=977
-      - LUAJIT=true
+      - LUAJIT=false
+      - PROSODY_REVISION=8ec18a002c30
     volumes:
-      # bind mounts ro
-      - /run/postgresql:/run/postgresql:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      # bind mounts rw
+      # could cause permission issues for the host if db startup is delayed
+      # https://github.com/moby/moby/issues/13121#issuecomment-336186993
+      - type: bind
+        source: /run/postgresql
+        target: /run/postgresql
+        read_only: true
+      - type: bind
+        source: /etc/letsencrypt
+        target: /etc/letsencrypt
+        read_only: true
+      # rw host mappings
       - /home/prosody/config:/etc/prosody
       - /home/prosody/data:/var/lib/prosody
       - /home/prosody/upload:/srv/http/prosody_upload
-      # docker volumes
+      # docker volumes, can be volatile
       - logs:/var/log/prosody
       - src:/usr/src/prosody
       - modules:/usr/lib/prosody/modules-extra
