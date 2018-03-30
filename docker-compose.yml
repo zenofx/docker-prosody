@@ -1,4 +1,4 @@
-version: '2.3'
+version: '2.4'
 
 services:
   prosody:
@@ -6,20 +6,28 @@ services:
     build:
       context: .
     image: zeno/prosody:latest
+    userns_mode: "host"
     restart: unless-stopped
-    stop_grace_period: 15s
+    # stop_grace_period: 15s
     networks:
       net:
         ipv6_address: 2a01:4f8:1c17:42a2:dead:c01d:1d13:f001
+    # allow < 1024 port binds, does not work with userns enabled
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    cap_add:
+      - NET_BIND_SERVICE
     ports:
       # socks5 bytestream proxy
-      - 5000:5000/tcp
+      - 78.46.236.59:5000:5000/tcp
       # c2s - STARTTLS
-      - 5222:5222/tcp
+      - 78.46.236.59:5222:5222/tcp
+      - 78.46.236.59:80:80/tcp
       # c2s - Direct TLS
-      - 5223:5223/tcp
+      - 78.46.236.59:5223:5223/tcp
+      - 78.46.236.59:443:443/tcp
       # s2s
-      - 5269:5269/tcp
+      - 78.46.236.59:5269:5269/tcp
       # bosch (reverse proxied)
       - 127.0.0.1:5280:5280/tcp
     expose:
@@ -46,7 +54,7 @@ services:
       - UID=977
       - GID=977
       - LUAJIT=false
-      - PROSODY_REVISION=8ec18a002c30
+#      - PROSODY_REVISION=8ec18a002c30
     volumes:
       # could cause permission issues for the host if db startup is delayed
       # https://github.com/moby/moby/issues/13121#issuecomment-336186993

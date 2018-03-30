@@ -22,7 +22,8 @@ ENV UNAME=${UNAME} \
 ENV TERM="xterm" LANG="C.UTF-8" LC_ALL="C.UTF-8"
 
 RUN \
-	printf 'deb-src http://deb.debian.org/debian sid main' >> "/etc/apt/sources.list" \
+	set -x \
+	&& printf 'deb-src http://deb.debian.org/debian sid main' >> "/etc/apt/sources.list" \
 	&& apt-get update \
     && apt-get install -y --no-install-recommends \
         lsb-base \
@@ -54,7 +55,8 @@ COPY ./entrypoint.sh /entrypoint.sh
 COPY ./su-exec-0.2/su-exec /usr/local/bin/
 
 RUN \
-	echo ${TZ} > /etc/timezone \
+	set -x \
+	&& echo ${TZ} > /etc/timezone \
 	&& dpkg-reconfigure -f noninteractive tzdata 2>&1 \
 	&& mkdir -p /run/prosody /etc/prosody /var/lib/prosody /var/log/prosody /usr/lib/prosody/modules-extra /usr/src/prosody \
 	&& groupadd -r -g ${GID} ${UNAME} \
