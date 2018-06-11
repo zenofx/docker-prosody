@@ -17,7 +17,7 @@ if [[ "${LUAJIT,,}" = "true" ]]; then
 fi
 
 if [[ ! -e /usr/src/prosody/.hg ]]; then
-	su-exec $UID:$GID hg clone https://hg.prosody.im/trunk /usr/src/prosody
+	su-exec $UID:$GID hg clone https://hg.prosody.im/0.10/ /usr/src/prosody
 else
 	su-exec $UID:$GID /bin/bash -c 'hg pull -u -R /usr/src/prosody \
 		&& hg update -C -R /usr/src/prosody'
