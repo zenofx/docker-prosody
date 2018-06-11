@@ -55,6 +55,7 @@ services:
       - GID=977
       - LUAJIT=false
 #      - PROSODY_REVISION=8ec18a002c30
+#      - MODULES_REVISION=5bf79bb3cf7e
     volumes:
       # could cause permission issues for the host if db startup is delayed
       # https://github.com/moby/moby/issues/13121#issuecomment-336186993
