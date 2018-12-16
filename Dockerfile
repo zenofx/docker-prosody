@@ -1,5 +1,6 @@
 FROM debian:sid-slim
-LABEL maintainer="Thorsten Schubert <tschubert@bafh.org>"
+LABEL maintainer="Thorsten Schubert <tschubert@bafh.org>" \
+	  release="stable"
 
 ARG DEBIAN_FRONTEND="noninteractive"
 ARG UNAME="prosody"
@@ -7,6 +8,7 @@ ARG TZ="Europe/Berlin"
 ARG UID="977"
 ARG GID="977"
 ARG LUAJIT="false"
+ARG BRANCH="0.11"
 ARG PROSODY_REVISION="tip"
 ARG MODULES_REVISION="tip"
 
@@ -15,6 +17,7 @@ ENV UNAME=${UNAME} \
 	UID=${UID} \
 	GID=${GID} \
 	LUAJIT=${LUAJIT} \
+	BRANCH=${BRANCH} \
 	PROSODY_REVISION=${PROSODY_REVISION} \
 	MODULES_REVISION=${MODULES_REVISION} \
 	__FLUSH_LOG="yes"

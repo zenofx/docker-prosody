@@ -17,15 +17,20 @@ if [[ "${LUAJIT,,}" = "true" ]]; then
 fi
 
 if [[ ! -e /usr/src/prosody/.hg ]]; then
-	su-exec $UID:$GID hg clone https://hg.prosody.im/0.10/ /usr/src/prosody
+	# doesn't exit, clone
+	su-exec $UID:$GID hg clone https://hg.prosody.im/trunk/ /usr/src/prosody
 else
-	su-exec $UID:$GID /bin/bash -c 'hg pull -u -R /usr/src/prosody \
-		&& hg update -C -R /usr/src/prosody'
+	# exists, pull
+	su-exec $UID:$GID hg pull -u -R /usr/src/prosody
+fi
+# apply
+log "switching branch to ${BRANCH}"
+su-exec $UID:$GID hg update -C ${BRANCH} -R /usr/src/prosody
 
-	if [[ -v PROSODY_REVISION ]]; then
-		log "checking out prosody revision: ${PROSODY_REVISION}"
-		su-exec $UID:$GID hg update -C -r ${PROSODY_REVISION} -R /usr/src/prosody
-	fi
+# if PROSODY_REVISION is "tip", branch takes precedence and we skip ahead
+if [[ -v PROSODY_REVISION && $PROSODY_REVISION != 'tip' ]]; then
+	log "checking out prosody revision: ${PROSODY_REVISION}"
+	su-exec $UID:$GID hg update -C -r ${PROSODY_REVISION} -R /usr/src/prosody
 fi
 
 if [[ ! -e /usr/lib/prosody/modules-extra/.hg ]]; then
